@@ -39,11 +39,18 @@ passport.use(new OAuth2Strategy({
             return console.dir(error);
         }
         var parsedProfile = JSON.parse(body);
-        return cb(null, {
-            "id" : parsedProfile["Response"]["destinyMemberships"][0]["membershipId"],
-            "name" : parsedProfile["Response"]["destinyMemberships"][0]["displayName"],
-            "token" : accessToken
-        });
+        for (var profile in parsedProfile["Response"]["destinyMemberships"])
+        {
+            profile = parsedProfile["Response"]["destinyMemberships"][profile];
+            if (profile["membershipType"] == 3)
+            {
+                return cb(null, {
+                    "id" : parsedProfile["Response"]["destinyMemberships"][0]["membershipId"],
+                    "name" : parsedProfile["Response"]["destinyMemberships"][0]["displayName"],
+                    "token" : accessToken
+                });
+            }
+        }       
     });
   }
 ));
