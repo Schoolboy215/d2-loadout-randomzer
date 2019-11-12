@@ -35,11 +35,17 @@ app.engine( 'hbs', hbs( {
 } ) );
 app.set('view engine', 'hbs');
 
+var rtg   = require("url").parse(process.env.REDISTOGO_URL);
+var redis = require("redis").createClient(rtg.port, rtg.hostname);
+
+redis.auth(rtg.auth.split(":")[1]);
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.sessionSecret));
 app.use(session({
+  store: redis,
   secret: process.env.sessionSecret,
   resave: false,
   saveUninitialized: true,
