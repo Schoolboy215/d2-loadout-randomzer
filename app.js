@@ -41,7 +41,7 @@ app.set('view engine', 'hbs');
 
 // redis.auth(rtg.auth.split(":")[1]);
 let RedisStore = require('connect-redis')(session);
-//let redisClient = redis.createClient();
+let redisClient = redis.createClient();
 
 app.use(logger('dev'));
 app.use(express.json());
