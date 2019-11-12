@@ -1,0 +1,9 @@
+<div class='container'>
+    <h1>Destiny 2 loadout organizer</h1>
+    {{#if loggedIn}}
+    <p>You're logged in</p>
+    <a class="btn btn-primary" href="/verified">Click here to view profile</a>
+    {{else}}
+    <a class="btn btn-primary" href='/auth/login'>Login</a>
+    {{/if}}
+</div>
