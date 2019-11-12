@@ -49,7 +49,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.sessionSecret));
 app.use(session({
   store: new RedisStore({
-    //client: redisClient,
+    client: redisClient,
     url: process.env.REDIS_URL
   }),
   secret: process.env.sessionSecret,
