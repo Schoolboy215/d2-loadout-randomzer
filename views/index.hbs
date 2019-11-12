@@ -1,9 +1,13 @@
 <div class='container'>
-    <h1>Destiny 2 loadout organizer</h1>
-    {{#if loggedIn}}
-    <p>You're logged in</p>
-    <a class="btn btn-primary" href="/verified">Click here to view profile</a>
-    {{else}}
-    <a class="btn btn-primary" href='/auth/login'>Login</a>
-    {{/if}}
+    <div class="jumbotron">
+        <h1 class="display-4">Destiny 2 loadout organizer</h1>
+        <p class="lead">This piece of crap will let you randomize the loadout of one of your Destiny 2 characters. It only works for Steam accounts right now and I have basically no plans to change that, lol</p>
+        <hr>
+        {{#if loggedIn}}
+        <p>You're logged in</p>
+        <a class="btn btn-primary" href="/verified">Click here to view profile</a>
+        {{else}}
+        <a class="btn btn-primary" href='/auth/login'>Login</a>
+        {{/if}}
+    </div>
 </div>
