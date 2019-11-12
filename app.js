@@ -41,7 +41,7 @@ app.set('view engine', 'hbs');
 
 // redis.auth(rtg.auth.split(":")[1]);
 let RedisStore = require('connect-redis')(session);
-let redisClient = redis.createClient();
+//let redisClient = redis.createClient();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -49,7 +49,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.sessionSecret));
 app.use(session({
   store: new RedisStore({
-    client: redisClient,
+    //client: redisClient,
     url: process.env.REDISTOGO_URL
   }),
   secret: process.env.sessionSecret,
