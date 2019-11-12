@@ -50,7 +50,7 @@ app.use(cookieParser(process.env.sessionSecret));
 app.use(session({
   store: new RedisStore({
     client: redisClient,
-    url: process.env.REDIS_URL
+    url: process.env.REDISCLOUD_URL
   }),
   secret: process.env.sessionSecret,
   resave: false,
