@@ -17,7 +17,7 @@ exports.getCharacters = function(user)
             var characters = [];
             if (parsedProfile["Response"] == null)
             {
-                resolve("Chracter loading error");
+                resolve(["profile error",parsedProfile]);
                 return;
             }
             for(var key in parsedProfile["Response"]["characters"]["data"]) {

@@ -9,8 +9,8 @@ router.get('/', ensureAuthenticated, function(req, res, next) {
 
 router.get('/characters', ensureAuthenticated, function(req, res, next) {
   profileService.getCharacters(req.user).then(result => {
-    if (result == "Chracter loading error")
-      res.render('error', { err: result}); 
+    if (Array.isArray(result))
+      res.json(result[1]);
     else
     { 
       if (req.session.randomizeResult != null)
