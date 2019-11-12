@@ -42,15 +42,14 @@ var client = redis.createClient(process.env.REDISCLOUD_URL, {no_ready_check: tru
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(process.env.sessionSecret));
+app.use(cookieParser());
 app.use(session({
   store: new RedisStore({
-    client: client
+    client : client
   }),
   secret: process.env.sessionSecret,
   resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true }
+  saveUninitialized: false,
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({extended:false}));
@@ -75,7 +74,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error',{err: err});
 });
 
 module.exports = app;
