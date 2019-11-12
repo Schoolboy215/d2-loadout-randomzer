@@ -39,6 +39,7 @@ passport.use(new OAuth2Strategy({
             return console.dir(error);
         }
         var parsedProfile = JSON.parse(body);
+        console.log(JSON.stringify(parsedProfile["Response"]["destinyMemberships"]));
         for (var profile in parsedProfile["Response"]["destinyMemberships"])
         {
             profile = parsedProfile["Response"]["destinyMemberships"][profile];
