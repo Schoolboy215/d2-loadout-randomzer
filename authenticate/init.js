@@ -46,8 +46,8 @@ passport.use(new OAuth2Strategy({
             if (profile["membershipType"] == 3)
             {
                 return cb(null, {
-                    "id" : parsedProfile["Response"]["destinyMemberships"][0]["membershipId"],
-                    "name" : parsedProfile["Response"]["destinyMemberships"][0]["displayName"],
+                    "id" : profile["membershipId"],
+                    "name" : profile["displayName"],
                     "token" : accessToken
                 });
             }
