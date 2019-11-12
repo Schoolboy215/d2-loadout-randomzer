@@ -143,7 +143,7 @@ exports.equipRandomIntoEachSlot = function(user,characterId,equipmentArray)
             },
             json: true
         }, (error, response, body) => {
-            resolve(body["Response"]["equipResults"]);
+            resolve("Equip completed");
         })
     });
 }

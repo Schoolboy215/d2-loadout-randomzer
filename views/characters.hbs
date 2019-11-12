@@ -1,6 +1,13 @@
 <div class="container">
   {{#if message}}
-  <p>{{message}}</p>
+  <div class="card">
+    <div class="card-header">
+      Response
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">{{message}}</h5>
+    </div>
+  </div>
   {{/if}}
   {{#if characters}}
   <ul class="list-group">
