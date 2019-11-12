@@ -15,6 +15,11 @@ exports.getCharacters = function(user)
             }
             var parsedProfile = JSON.parse(body);
             var characters = [];
+            if (parsedProfile["Response"] == null)
+            {
+                resolve("Chracter loading error");
+                return;
+            }
             for(var key in parsedProfile["Response"]["characters"]["data"]) {
                 var value = parsedProfile["Response"]["characters"]["data"][key];
                 characters.push(value);
