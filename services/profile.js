@@ -20,9 +20,9 @@ exports.getCharacters = function(user)
                 resolve(["profile error",body]);
             }
             var characters = [];
-            if (parsedProfile["Response"] == null)
+            if (parsedProfile == null || parsedProfile["Response"] == null)
             {
-                resolve(["profile error",parsedProfile]);
+                resolve(["profile error",body]);
                 return;
             }
             for(var key in parsedProfile["Response"]["characters"]["data"]) {
