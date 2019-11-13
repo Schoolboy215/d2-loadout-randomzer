@@ -28,10 +28,12 @@ router.get('/characters', ensureAuthenticated, function(req, res, next) {
 });
 
 router.post('/characters/:characterId/randomize', function(req, res, next) {
-  profileService.getInventoryFromCharacter(req.user, req.params.characterId).then(itemChoices => {
-    profileService.equipRandomIntoEachSlot(req.user, req.params.characterId, itemChoices).then(result => {
-      req.session.randomizeResult = JSON.stringify(result);
-      res.redirect('/verified/characters');
+  profileService.getInventoryFromCharacter(req.user, req.params.characterId).then(inventory => {
+    profileService.getListOfItemsToEquip(inventory).then(itemsToEquip => {
+      profileService.equipItemsFromList(req.user, req.params.characterId, itemsToEquip).then(equipResults => {
+        req.session.randomizeResult = JSON.stringify(equipResults);
+        res.redirect('/verified/characters');
+      })
     });
   });
 });
