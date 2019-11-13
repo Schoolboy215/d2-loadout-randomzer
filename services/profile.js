@@ -13,7 +13,12 @@ exports.getCharacters = function(user)
             if(error) {
                 return console.dir(error);
             }
-            var parsedProfile = JSON.parse(body);
+            try{
+                var parsedProfile = JSON.parse(body);
+            }
+            catch {
+                resolve(["profile error",body]);
+            }
             var characters = [];
             if (parsedProfile["Response"] == null)
             {
