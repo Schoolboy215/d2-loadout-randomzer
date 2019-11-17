@@ -209,6 +209,7 @@ exports.getListOfItemsToEquip = function(items)
         let nonExotics = {};
 
         let itemsToEquip = [];
+        let exoticEquips = [];
         var bucketsToConsider = [
             "Kinetic Weapons",
             "Energy Weapons",
@@ -227,7 +228,7 @@ exports.getListOfItemsToEquip = function(items)
             let index = Math.floor(Math.random() * weaponExotics.length);
             if (weaponExotics[index]["equipped"] == false)
             {
-                itemsToEquip.push({
+                exoticEquips.push({
                     item : weaponExotics[index],
                     sendToVault : false
                 });
@@ -239,7 +240,7 @@ exports.getListOfItemsToEquip = function(items)
             let index = Math.floor(Math.random() * armorExotics.length);
             if (armorExotics[index]["equipped"] == false)
             {
-                itemsToEquip.push({
+                exoticEquips.push({
                     item : armorExotics[index],
                     sendToVault : false
                 });
@@ -257,6 +258,8 @@ exports.getListOfItemsToEquip = function(items)
                 });
             }
         }
+        itemsToEquip = itemsToEquip.concat(exoticEquips);
+        
         for (let index in itemsToEquip)
         {
             let currentBucket = itemsToEquip[index]["item"]["bucketName"];
