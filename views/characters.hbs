@@ -20,7 +20,7 @@
         <h6 class="card-subtitle mb-2 text-muted">{{this.race}}</h6>
         <h6 class="card-subtitle mb-2 text-muted">{{this.gender}}</h6>
         <h6 class="card-subtitle mb-2 text-muted">{{this.class}}</h6>
-        <form action="characters/{{this.characterId}}/randomize" method="post">
+        <form action="characters/{{this.characterId}}/{{this.classType}}/randomize" method="post">
           <input class="btn btn-primary" type="submit" name="submit" value="Randomize" />
         </form>
       </div>

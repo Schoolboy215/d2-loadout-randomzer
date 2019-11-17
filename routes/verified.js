@@ -27,8 +27,8 @@ router.get('/characters', ensureAuthenticated, function(req, res, next) {
   });
 });
 
-router.post('/characters/:characterId/randomize', function(req, res, next) {
-  profileService.getInventoryFromCharacter(req.user, req.params.characterId).then(inventory => {
+router.post('/characters/:characterId/:classType/randomize', function(req, res, next) {
+  profileService.getInventoryFromCharacter(req.user, req.params.characterId, req.params.classType).then(inventory => {
     profileService.getListOfItemsToEquip(inventory).then(itemsToEquip => {
       profileService.equipItemsFromList(req.user, req.params.characterId, itemsToEquip).then(equipResults => {
         req.session.randomizeResult = JSON.stringify(equipResults);
