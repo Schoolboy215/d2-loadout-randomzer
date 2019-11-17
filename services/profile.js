@@ -201,7 +201,7 @@ getItemInfo = function(user, itemHash, itemInstanceId)
         })
     });
 }
-exports.getListOfItemsToEquip = function(items)
+exports.getListOfItemsToEquip = function(items,randomizeWeapons,randomizeArmor)
 {
     return new Promise(resolve => {
         let weaponExotics = [];
@@ -210,20 +210,28 @@ exports.getListOfItemsToEquip = function(items)
 
         let itemsToEquip = [];
         let exoticEquips = [];
-        var bucketsToConsider = [
+        let weaponBuckets = [
             "Kinetic Weapons",
             "Energy Weapons",
-            "Power Weapons",
+            "Power Weapons"
+        ]
+        let armorBuckets = [
             "Helmet",
             "Gauntlets",
             "Chest Armor",
             "Leg Armor",
             "Class Armor"
-        ];
+        ]
+        var bucketsToConsider = [];
+        
+        if (randomizeWeapons)
+            bucketsToConsider = bucketsToConsider.concat(weaponBuckets);
+        if (randomizeArmor)
+            bucketsToConsider = bucketsToConsider.concat(armorBuckets);
 
         [weaponExotics, armorExotics, nonExotics] = separateExotics(items);
 
-        if (weaponExotics.length)
+        if (weaponExotics.length && randomizeWeapons)
         {
             let index = Math.floor(Math.random() * weaponExotics.length);
             if (weaponExotics[index]["equipped"] == false)
@@ -235,7 +243,7 @@ exports.getListOfItemsToEquip = function(items)
             }
             bucketsToConsider.splice(bucketsToConsider.indexOf(weaponExotics[index]["bucketName"]),1);
         }
-        if (armorExotics.length)
+        if (armorExotics.length && randomizeArmor)
         {
             let index = Math.floor(Math.random() * armorExotics.length);
             if (armorExotics[index]["equipped"] == false)
@@ -259,7 +267,7 @@ exports.getListOfItemsToEquip = function(items)
             }
         }
         itemsToEquip = itemsToEquip.concat(exoticEquips);
-        
+
         for (let index in itemsToEquip)
         {
             let currentBucket = itemsToEquip[index]["item"]["bucketName"];

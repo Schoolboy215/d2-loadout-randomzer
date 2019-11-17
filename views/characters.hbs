@@ -20,8 +20,17 @@
         <h6 class="card-subtitle mb-2 text-muted">{{this.race}}</h6>
         <h6 class="card-subtitle mb-2 text-muted">{{this.gender}}</h6>
         <h6 class="card-subtitle mb-2 text-muted">{{this.class}}</h6>
-        <form action="characters/{{this.characterId}}/{{this.classType}}/randomize" method="post">
-          <input class="btn btn-primary" type="submit" name="submit" value="Randomize" />
+        
+        <form action="characters/{{this.characterId}}/{{this.classType}}/randomize" method="post" enctype='application/json'>
+          <div class="form-check">
+            <input class="form-check-input" name="weaponCheck" type="checkbox" checked="checked" id="weaponCheck">
+            <label class="form-check-label" for="weaponCheck">Weapons</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" name="armorCheck" type="checkbox" checked="checked" id="armorCheck">
+            <label class="form-check-label" for="armorCheck">Armor</label>
+          </div>
+          <input class="btn btn-primary" type="submit" name="submit"/>
         </form>
       </div>
     </div>

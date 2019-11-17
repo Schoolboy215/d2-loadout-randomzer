@@ -29,7 +29,9 @@ router.get('/characters', ensureAuthenticated, function(req, res, next) {
 
 router.post('/characters/:characterId/:classType/randomize', function(req, res, next) {
   profileService.getInventoryFromCharacter(req.user, req.params.characterId, req.params.classType).then(inventory => {
-    profileService.getListOfItemsToEquip(inventory).then(itemsToEquip => {
+    let randomizeWeapons = (("weaponCheck" in req.body) ? true : false);
+    let randomizeArmor = (("armorCheck" in req.body) ? true : false);
+    profileService.getListOfItemsToEquip(inventory,randomizeWeapons,randomizeArmor).then(itemsToEquip => {
       profileService.equipItemsFromList(req.user, req.params.characterId, itemsToEquip).then(equipResults => {
         req.session.randomizeResult = JSON.stringify(equipResults);
         res.redirect('/verified/characters');
