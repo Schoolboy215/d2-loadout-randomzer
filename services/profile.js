@@ -62,7 +62,7 @@ exports.getCharacters = function(user)
         });
     });   
 }
-getVaultInventory = function(user, classType)
+getVaultInventory = function(db, user, classType)
 {
     return new Promise((resolve) => {
         request.get({
@@ -74,7 +74,7 @@ getVaultInventory = function(user, classType)
         }, (error, response, body) => {
             var parsedBody = JSON.parse(body);
             var fullInventory = parsedBody["Response"]["profileInventory"]["data"]["items"];
-            getListOfBucketsFromEquipment(user, fullInventory).then(bucketLookup => {
+            getListOfBucketsFromEquipment(db, user, fullInventory).then(bucketLookup => {
                 var generalItems = []
                 for (var index in fullInventory)
                 {
@@ -84,7 +84,7 @@ getVaultInventory = function(user, classType)
                 var Promises = []
                 for (var index in generalItems)
                 {
-                    Promises.push(getItemInfo(user, generalItems[index]["itemHash"], generalItems[index]["itemInstanceId"]));
+                    Promises.push(getItemInfo(db, user, generalItems[index]["itemHash"], generalItems[index]["itemInstanceId"]));
                 }
                 Promise.all(Promises).then(itemResults => {
                     let itemsToReturn = [];
@@ -94,7 +94,6 @@ getVaultInventory = function(user, classType)
                         itemResults[i]["equipped"] = false;
                         if (itemResults[i]["classType"] == 3 || itemResults[i]["classType"] == classType)
                             itemsToReturn.push(itemResults[i])
-
                     }
                     resolve(itemsToReturn);
                 })
@@ -102,7 +101,7 @@ getVaultInventory = function(user, classType)
         });
     });   
 }
-cleanupCharacterInventory = function(user, inventory, equipment, bucketLookup)
+cleanupCharacterInventory = function(db, user, inventory, equipment, bucketLookup)
 {
     return new Promise(resolve => {
         var cleanedItems = [];
@@ -112,15 +111,7 @@ cleanupCharacterInventory = function(user, inventory, equipment, bucketLookup)
             var bucketName = Object.keys(bucketLookup).find(key => bucketLookup[key] === inventory[index]["bucketHash"]);
             if (inventory[index]["itemInstanceId"] != null && bucketName != null)
             {
-                inventoryLookupPromises.push(getItemInfo(user, inventory[index]["itemHash"], inventory[index]["itemInstanceId"]));
-                // cleanedItems.push({
-                //     itemInstanceId : inventory[index]["itemInstanceId"],
-                //     itemHash : inventory[index]["itemHash"],
-                //     bucketName : bucketName,
-                //     bucketHash : inventory[index]["bucketHash"],
-                //     vault : false,
-                //     equipped : false
-                // });
+                inventoryLookupPromises.push(getItemInfo(db, user, inventory[index]["itemHash"], inventory[index]["itemInstanceId"]));
             }
         }
         Promise.all(inventoryLookupPromises).then(inventoryLookupResults => {
@@ -138,7 +129,7 @@ cleanupCharacterInventory = function(user, inventory, equipment, bucketLookup)
                 var bucketName = Object.keys(bucketLookup).find(key => bucketLookup[key] === equipment[index]["bucketHash"]);
                 if (equipment[index]["itemInstanceId"] != null && bucketName != null)
                 {
-                    equipmentLookupPromises.push(getItemInfo(user, equipment[index]["itemHash"], equipment[index]["itemInstanceId"]));
+                    equipmentLookupPromises.push(getItemInfo(db,user, equipment[index]["itemHash"], equipment[index]["itemInstanceId"]));
                 }
             }
             Promise.all(equipmentLookupPromises).then(equipmentLookupResults => {
@@ -177,28 +168,53 @@ returnCombinedInventoriesByBucket = function(characterInventory, vaultInventory,
         resolve(combinedInventory);
     });
 }
-getItemInfo = function(user, itemHash, itemInstanceId)
+getItemInfo = function(db, user, itemHash, itemInstanceId)
 {
     return new Promise(resolve => {
-        request.get({
-            "headers": {
-                'X-API-Key': process.env.apiKey,
-                'Authorization' : 'Bearer '+user.token},
-            "url": "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/"+itemHash+"/"
-        }, (error, response, body) => {
-            parsedBody = JSON.parse(body);
-            let currentItem = parsedBody["Response"];
-            getBucketInfoFromHash(user,parsedBody["Response"]["inventory"]["bucketTypeHash"]).then(bucketInfo => {
-                resolve({
-                    itemInstanceId : itemInstanceId,
-                    itemHash : itemHash,
-                    bucketName : bucketInfo[0],
-                    bucketHash : bucketInfo[1],
-                    exotic : (currentItem["inventory"]["tierType"] == 6 ? true : false),
-                    classType : currentItem["classType"]
+        let query = { itemInstanceId: itemInstanceId };
+        db.collection("itemInfoCache").findOne(query, function(err, document) {
+            if (document)
+            {
+                let currentItem = document.response;
+                getBucketInfoFromHash(db, user,currentItem["inventory"]["bucketTypeHash"]).then(bucketInfo => {
+                    resolve({
+                        itemInstanceId : itemInstanceId,
+                        itemHash : itemHash,
+                        bucketName : bucketInfo[0],
+                        bucketHash : bucketInfo[1],
+                        exotic : (currentItem["inventory"]["tierType"] == 6 ? true : false),
+                        classType : currentItem["classType"]
+                    });
                 });
-            });
-        })
+            }
+            else
+            {
+                request.get({
+                    "headers": {
+                        'X-API-Key': process.env.apiKey,
+                        'Authorization' : 'Bearer '+user.token},
+                    "url": "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryItemDefinition/"+itemHash+"/"
+                }, (error, response, body) => {
+                    parsedBody = JSON.parse(body);
+                    let currentItem = parsedBody["Response"];
+                    db.collection("itemInfoCache").insertOne({
+                        itemInstanceId : itemInstanceId,
+                        response : currentItem
+                    }, function(err, res) {
+                        getBucketInfoFromHash(db, user,currentItem["inventory"]["bucketTypeHash"]).then(bucketInfo => {
+                            resolve({
+                                itemInstanceId : itemInstanceId,
+                                itemHash : itemHash,
+                                bucketName : bucketInfo[0],
+                                bucketHash : bucketInfo[1],
+                                exotic : (currentItem["inventory"]["tierType"] == 6 ? true : false),
+                                classType : currentItem["classType"]
+                            });
+                        });
+                    });
+                })
+            }
+        });
     });
 }
 exports.getListOfItemsToEquip = function(items,randomizeWeapons,randomizeArmor)
@@ -469,7 +485,7 @@ getClassFromHash = function(user, classHash)
     });
 }
 
-exports.getInventoryFromCharacter = function(user,characterId,classType)
+exports.getInventoryFromCharacter = function(db,user,characterId,classType)
 {
     return new Promise(resolve => {
         request.get({
@@ -483,9 +499,9 @@ exports.getInventoryFromCharacter = function(user,characterId,classType)
             var inventoryAndEquip = parsedBody["Response"]["equipment"]["data"]["items"].concat(parsedBody["Response"]["inventory"]["data"]["items"]);
             var equipment = parsedBody["Response"]["equipment"]["data"]["items"];
             var inventory = parsedBody["Response"]["inventory"]["data"]["items"];
-            getVaultInventory(user, classType).then(vaultItems => {
-                getListOfBucketsFromEquipment(user, inventoryAndEquip).then(bucketLookup => {
-                    cleanupCharacterInventory(user, inventory, equipment, bucketLookup).then(characterInventory => {
+            getVaultInventory(db, user, classType).then(vaultItems => {
+                getListOfBucketsFromEquipment(db, user, inventoryAndEquip).then(bucketLookup => {
+                    cleanupCharacterInventory(db, user, inventory, equipment, bucketLookup).then(characterInventory => {
                         returnCombinedInventoriesByBucket(characterInventory, vaultItems, bucketLookup).then(combinedInventory => {
                             resolve(combinedInventory);
                         });
@@ -528,7 +544,7 @@ exports.equipRandomIntoEachSlot = function(user,characterId,equipmentArray)
     });
 }
 
-getListOfBucketsFromEquipment = function(user, equipmentArray)
+getListOfBucketsFromEquipment = function(db, user, equipmentArray)
 {
     return new Promise(resolve => {
         var Promises = [];
@@ -539,7 +555,7 @@ getListOfBucketsFromEquipment = function(user, equipmentArray)
             if (!checkedHashes.includes(equipment["bucketHash"]))
             {
                 checkedHashes.push(equipment["bucketHash"]);
-                Promises.push(getBucketInfoFromHash(user, equipment["bucketHash"]));
+                Promises.push(getBucketInfoFromHash(db, user, equipment["bucketHash"]));
             }
         }
         Promise.all(Promises).then(bucketLookups => {
@@ -581,17 +597,32 @@ getItemsEligibleToPutInBuckets = function(user, bucketLookup, inventoryArray)
     });
 }
 
-getBucketInfoFromHash = function(user, bucketHash)
+getBucketInfoFromHash = function(db, user, bucketHash)
 {
     return new Promise(resolve => {
-        request.get({
-            "headers": {
-                'X-API-Key': process.env.apiKey,
-                'Authorization' : 'Bearer '+user.token},
-            "url": "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryBucketDefinition/"+bucketHash+"/"
-        }, (error, response, body) => {
-            parsedBody = JSON.parse(body);
-            resolve([parsedBody["Response"]["displayProperties"]["name"], bucketHash]);
-        })
+        let query = { bucketHash: bucketHash };
+        db.collection("bucketCache").findOne(query, function(err, document) {
+            if (document)
+            {
+                resolve([document.response["displayProperties"]["name"], bucketHash]);
+            }
+            else
+            {
+                request.get({
+                    "headers": {
+                        'X-API-Key': process.env.apiKey,
+                        'Authorization' : 'Bearer '+user.token},
+                    "url": "https://www.bungie.net/Platform/Destiny2/Manifest/DestinyInventoryBucketDefinition/"+bucketHash+"/"
+                }, (error, response, body) => {
+                    parsedBody = JSON.parse(body);
+                    db.collection("bucketCache").insertOne({
+                        bucketHash : bucketHash,
+                        response : parsedBody["Response"]
+                    }, function(err, res) {
+                        resolve([parsedBody["Response"]["displayProperties"]["name"], bucketHash]);
+                    });
+                })
+            }
+        });
     });
 }

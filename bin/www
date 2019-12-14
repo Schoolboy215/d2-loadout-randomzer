@@ -5,10 +5,11 @@
  */
 require('dotenv').config()
 var app = require('../app');
+
 var debug = require('debug')('d2loadoutrandomizer:server');
 var fs = require('fs');
-var http = require('http');
-//var http = require('https'); //Use this for local testing
+//var http = require('http');
+var http = require('https'); //Use this for local testing
 
 /**
  * Get port from environment and store in Express.
@@ -21,11 +22,11 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
-// var server = http.createServer({        //Use this block for local testing
-//  key: fs.readFileSync('server.key'),
-//  cert: fs.readFileSync('server.crt')
-// },app);
+//var server = http.createServer(app);
+var server = http.createServer({        //Use this block for local testing
+key: fs.readFileSync('server.key'),
+cert: fs.readFileSync('server.crt')
+},app);
 
 /**
  * Listen on provided port, on all network interfaces.

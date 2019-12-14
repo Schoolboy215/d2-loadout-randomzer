@@ -8,13 +8,17 @@ var session = require('express-session');
 var passport = require('passport');
 var hbs = require('express-handlebars');
 var sassMiddleware  = require('node-sass-middleware');
+const MongoClient = require('mongodb').MongoClient;
+const uri = "mongodb+srv://connector:oAw1SHUvumepVmcO@testingcluster-34ofu.mongodb.net/test?retryWrites=true&w=majority";
+const mongoClient = new MongoClient(uri, { useNewUrlParser: true });
 require('./authenticate/init');
 
-var indexRouter = require('./routes/index');
-var verifiedRouter = require('./routes/verified');
-var authRouter = require('./routes/auth');
+// var indexRouter = require('./routes/index');
+// var verifiedRouter = require('./routes/verified');
+// var authRouter = require('./routes/auth');
 
 var app = express();
+app.db = "DB not connected yet";
 
 app.use('/stylesheets',sassMiddleware({
   /* Options */
@@ -29,7 +33,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.engine( 'hbs', hbs( { 
   extname: 'hbs', 
   defaultLayout: 'main',
-  //helpers: require("./public/javascripts/helpers.js").helpers,
   layoutsDir: __dirname + '/views/layouts/',
   partialsDir: __dirname + '/views/partials/'
 } ) );
@@ -57,6 +60,11 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Routing
+var indexRouter = require('./routes/index');
+var verifiedRouter = require('./routes/verified')(app.db);
+var authRouter = require('./routes/auth');
+
 app.use('/', indexRouter);
 app.use('/verified', verifiedRouter);
 app.use('/auth', authRouter);
@@ -75,6 +83,16 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error',{err: err});
+});
+
+mongoClient.connect(err => {
+  if (err){
+    console.log("MongoDB connection error");
+    console.log(err);
+    process.exit();
+  }
+  else
+    app.db = mongoClient.db("d2LoadoutRandomizer");
 });
 
 module.exports = app;
